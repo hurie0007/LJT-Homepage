@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -21,17 +21,16 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v4
+      - uses: ruby/setup-ruby@v1
         with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
+          ruby-version: 3.0
+          bundler-cache: true
+      - run: bundle install
+      - run: bundle exec jekyll build
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir ./_site
